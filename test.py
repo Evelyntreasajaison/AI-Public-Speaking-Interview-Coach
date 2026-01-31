@@ -125,20 +125,20 @@ def get_posture_score(pose):
 
 class SpeakingCoach:
     def __init__(self):
-        self.eye_frames = 0 #number of frames user was making eye contact
-        self.total = 0      #total frames processed
-        self.blinks = 0     #total blink count
-        self.blink_state = False   # eyes are closed/open true/false
-        self.start = time.time()   #timestamp when session started
-        self.head = deque(maxlen=50)  #rolling buffer storing the last 50 head positions
+        self.eye_frames = 0 
+        self.total = 0      
+        self.blinks = 0    
+        self.blink_state = False   
+        self.start = time.time()   
+        self.head = deque(maxlen=50)  
 
-        self.face = mp_face_mesh.FaceMesh(  #detects 1 face returns 468 facial landmarks iris/eye area for accuracy
+        self.face = mp_face_mesh.FaceMesh(  
             refine_landmarks=True,
             max_num_faces=1,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5
         )
-        self.pose = mp_pose.Pose(  #This detects the full body skeleton.
+        self.pose = mp_pose.Pose(  
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5
         )
@@ -153,10 +153,10 @@ class SpeakingCoach:
 
     def run(self, frame):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        face = self.face.process(rgb)  #facial landmarks
-        pose = self.pose.process(rgb)  #body landmarks
+        face = self.face.process(rgb)  
+        pose = self.pose.process(rgb)  
 
-        eye_contact = 0  #initially model dosent detect so eyecontact & posture-->0
+        eye_contact = 0  
         posture = 0
 
         if face.multi_face_landmarks:
@@ -192,19 +192,19 @@ class SpeakingCoach:
 
         head_score = float(np.clip(head_score, 0, 100))
 
-        bpm = self.blinks / max((time.time() - self.start) / 60, 0.01) #Divides blink count by minutes elapsed.
-        blink_penalty = max(0, 100 - abs(bpm - 15) * 5) #Ideal blink rate ≈ 15/min far from 15 ->lower score
+        bpm = self.blinks / max((time.time() - self.start) / 60, 0.01)
+        blink_penalty = max(0, 100 - abs(bpm - 15) * 5) 
 
         conf = (
-            0.35 * eye_pct + #eye contact
+            0.35 * eye_pct + 
             0.25 * head_score +
             0.25 * posture +
-            0.15 * blink_penalty #Blink Naturalness
+            0.15 * blink_penalty 
         )
 
         return {
             "eye": eye_pct,  
-            "bpm": bpm,  #b;ink per minute
+            "bpm": bpm,  
             "posture": posture,
             "head": head_score,
             "conf": float(np.clip(conf, 0, 100))
@@ -277,3 +277,4 @@ if run:
             fb_box.markdown("<div class='feedback-box'>🌟 Excellent delivery! Keep going!</div>", unsafe_allow_html=True)
 
         time.sleep(0.03)
+
